@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathKeyboard(LaTeX)</title>
+  <meta name="description" content="LaTeX로 수식을 입력해 Word·삼성노트·노션에 이미지로 바로 붙여 넣는 안드로이드 수학 키보드. MATH·PHYSICS 키보드, 손글씨 수식 인식, CAS 계산기, 그래프, 블루투스 키보드까지.">
+  <meta property="og:title" content="MathKeyboard(LaTeX) — 수식을 키보드로">
+  <meta property="og:description" content="LaTeX로 입력하고, 수식 이미지로 바로 붙여 넣는 안드로이드 수학 키보드">
+  <meta property="og:image" content="icon.png">
+  <link rel="icon" href="icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* 연필 스케치 아이콘에 맞춘 종이 + 흑연 톤 */
+    :root {
+      --paper: #f7f5ef;
+      --paper-2: #efece3;
+      --card: #fffdf8;
+      --ink: #26241f;
+      --ink-2: #5d5a52;
+      --line: #d9d4c7;
+      --grid: rgba(60, 55, 45, 0.06);
+      --accent: #c2410c;      /* 빨간 연필 */
+      --accent-soft: #fbe7dc;
+      --premium: #a16207;
+      --premium-soft: #fdf1cf;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --paper: #1b1a17;
+        --paper-2: #23221e;
+        --card: #262520;
+        --ink: #ece8dd;
+        --ink-2: #aaa596;
+        --line: #3b3932;
+        --grid: rgba(255, 250, 235, 0.045);
+        --accent: #fb923c;
+        --accent-soft: #3a2518;
+        --premium: #facc15;
+        --premium-soft: #3a3115;
+      }
+    }
+    :root[data-theme="dark"] {
+      --paper: #1b1a17; --paper-2: #23221e; --card: #262520; --ink: #ece8dd; --ink-2: #aaa596;
+      --line: #3b3932; --grid: rgba(255, 250, 235, 0.045); --accent: #fb923c; --accent-soft: #3a2518;
+      --premium: #facc15; --premium-soft: #3a3115;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 28px 28px;
+      color: var(--ink);
+      font-family: 'Noto Sans KR', system-ui, sans-serif;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      overflow-x: hidden;
+    }
+    .font-hand { font-family: 'Nanum Pen Script', cursive; }
+    .font-soft { font-family: 'Gowun Dodum', 'Noto Sans KR', sans-serif; }
+    .text-ink-2 { color: var(--ink-2); }
+    .text-accent { color: var(--accent); }
+    .bg-card { background: var(--card); }
+    .bg-paper-2 { background: var(--paper-2); }
+    .border-line { border-color: var(--line); }
+
+    /* 손으로 그린 듯한 테두리 */
+    .sketch {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      border-radius: 18px 14px 20px 12px / 12px 20px 14px 18px;
+      box-shadow: 4px 4px 0 var(--line);
+    }
+    .sketch-soft {
+      background: var(--card);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+    }
+    /* 형광펜 밑줄 */
+    .marker {
+      background: linear-gradient(transparent 62%, var(--accent-soft) 62%);
+      padding: 0 2px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+      background: var(--premium-soft); color: var(--premium); white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--ink); color: var(--paper);
+      border: 2px solid var(--ink);
+    }
+    .btn-primary:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--accent); }
+    .btn-ghost { border: 2px solid var(--ink); color: var(--ink); background: transparent; }
+    .btn-ghost:hover { background: var(--card); }
+    .btn-primary, .btn-ghost { transition: transform .15s, box-shadow .15s, background .15s; }
+
+    .katex { font-size: 1.15em; color: var(--ink); }
+    .demo-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.on { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 메뉴 -->
+  <header class="sticky top-0 z-40 backdrop-blur" style="background: color-mix(in srgb, var(--paper) 85%, transparent); border-bottom: 1px solid var(--line);">
+    <nav class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+      <a href="../../" class="text-sm text-ink-2 hover:underline whitespace-nowrap">← 앱 목록</a>
+      <div class="hidden sm:flex gap-5 text-sm font-medium">
+        <a href="#features" class="hover:text-accent">기능</a>
+        <a href="#tools" class="hover:text-accent">도구</a>
+        <a href="#videos" class="hover:text-accent">사용법 영상</a>
+        <a href="#premium" class="hover:text-accent">프리미엄</a>
+      </div>
+      <a href="https://play.google.com/store/apps/details?id=com.heappor.mathkeyboardlatex"
+         class="btn-primary text-sm font-bold px-4 py-1.5 rounded-full whitespace-nowrap" target="_blank" rel="noopener">설치하기</a>
+    </nav>
+  </header>
+
+  <!-- 히어로 -->
+  <section class="max-w-5xl mx-auto px-4 pt-12 pb-16 sm:pt-20 sm:pb-24">
+    <div class="grid md:grid-cols-[1.15fr_1fr] gap-10 items-center">
+      <div>
+        <p class="font-hand text-2xl text-accent mb-2">수학 선생님이 직접 만든 키보드</p>
+        <h1 class="font-soft text-4xl sm:text-5xl font-bold leading-tight mb-5">
+          수식을 <span class="marker">키보드로</span> 쓰고,<br>
+          <span class="marker">이미지로</span> 바로 붙여 넣으세요
+        </h1>
+        <p class="text-lg text-ink-2 leading-relaxed mb-8">
+          LaTeX 명령어를 입력하면 깔끔한 수식 이미지가 되어
+          Word · 삼성노트 · 노션에 그대로 들어갑니다.
+          MATH · PHYSICS 키보드, 손글씨 수식 인식, CAS 계산기, 그래프까지 키보드 하나에.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="https://play.google.com/store/apps/details?id=com.heappor.mathkeyboardlatex" target="_blank" rel="noopener"
+             class="btn-primary font-bold px-6 py-3 rounded-full">▶ Google Play에서 설치</a>
+          <a href="https://youtu.be/GQR7Io3z4r0" target="_blank" rel="noopener"
+             class="btn-ghost font-bold px-6 py-3 rounded-full">🆕 업데이트 영상 보기</a>
+        </div>
+        <p class="text-sm text-ink-2 mt-5">Android · 키보드 30개 언어 · 앱 화면 12개 언어</p>
+      </div>
+
+      <!-- 입력 → 수식 미리보기 -->
+      <div class="relative">
+        <img src="icon.png" alt="MathKeyboard(LaTeX) 아이콘" width="112" height="112"
+             class="absolute -top-8 -right-2 w-24 h-24 sm:w-28 sm:h-28 rounded-3xl shadow-lg rotate-6 border-2" style="border-color: var(--ink);">
+        <div class="sketch p-5 sm:p-6">
+          <p class="font-hand text-xl text-ink-2 mb-3">명령어 버퍼</p>
+          <div class="bg-paper-2 rounded-lg px-3 py-2 mb-4 demo-code text-sm break-all" id="demo-src">\int_{0}^{1} x^2\,dx = \frac{1}{3}</div>
+          <p class="font-hand text-xl text-ink-2 mb-2">붙여 넣으면 ↓</p>
+          <div class="sketch-soft px-4 py-6 text-center min-h-[84px] flex items-center justify-center overflow-x-auto" id="demo-out">
+            <span class="text-ink-2">수식을 불러오는 중…</span>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-4" id="demo-tabs" role="tablist" aria-label="예시 수식"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 핵심 3가지 -->
+  <section class="max-w-5xl mx-auto px-4 pb-16">
+    <div class="grid sm:grid-cols-3 gap-4">
+      <div class="sketch p-5 reveal">
+        <div class="text-3xl mb-2">⌨️</div>
+        <h3 class="font-bold text-lg mb-1">입력은 키보드로</h3>
+        <p class="text-ink-2 text-sm leading-relaxed">자동완성(⇥), 기호 참조, 숫자키 지수·첨자로 LaTeX를 빠르게.</p>
+      </div>
+      <div class="sketch p-5 reveal">
+        <div class="text-3xl mb-2">🖼️</div>
+        <h3 class="font-bold text-lg mb-1">결과는 수식 이미지로</h3>
+        <p class="text-ink-2 text-sm leading-relaxed">KaTeX · MathJax 렌더링. 크기 조절과 클립보드 기록까지.</p>
+      </div>
+      <div class="sketch p-5 reveal">
+        <div class="text-3xl mb-2">✏️</div>
+        <h3 class="font-bold text-lg mb-1">손으로 써도 OK</h3>
+        <p class="text-ink-2 text-sm leading-relaxed">손글씨 수식을 기기 안에서 바로 LaTeX로 인식합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 기능 -->
+  <section id="features" class="py-16 sm:py-20" style="border-top: 1px solid var(--line);">
+    <div class="max-w-5xl mx-auto px-4">
+      <p class="font-hand text-2xl text-accent">features</p>
+      <h2 class="font-soft text-3xl sm:text-4xl font-bold mb-10">이런 걸 할 수 있어요</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- 키보드 -->
+        <article class="sketch p-6 reveal">
+          <h3 class="text-xl font-bold mb-4">⌨️ 키보드 종류</h3>
+          <ul class="space-y-3 text-[15px] leading-relaxed">
+            <li><b>QWERTY</b> — 30개 언어. 한국어, 일본어(히라가나·가타카나), 중국어 간체(핀인)·번체(주음), 유럽어, 키릴 문자, 그리스어</li>
+            <li><b>MATH 키보드 (Σ)</b> — 수학 기호와 LaTeX 명령어 전용</li>
+            <li><b>PHYSICS 키보드 (⚛)</b> — 물리 기호와 단위 전용</li>
+            <li><b>미니 키보드</b> — 높이 2/3, 세로로 드래그해 숨은 키 사용</li>
+            <li><b>확대 키보드</b> <span class="chip">⭐ 프리미엄</span> — 자판을 길게 누르면 큰 자판</li>
+          </ul>
+        </article>
+
+        <!-- 수식 입력 -->
+        <article class="sketch p-6 reveal">
+          <h3 class="text-xl font-bold mb-4">∑ 수식(LaTeX) 입력</h3>
+          <ul class="space-y-3 text-[15px] leading-relaxed">
+            <li><b>명령어 자동완성 ⇥</b> <span class="chip">⭐</span> — <code class="demo-code text-sm">\lim</code> + ⇥ → <code class="demo-code text-sm">\lim_{}{}</code></li>
+            <li><b>버퍼 수식 표시</b> — 입력 중에도 x², α, a/b, √x 모양으로</li>
+            <li><b>숫자·알파벳 길게 누르기</b> — 지수 x² · 아래첨자 x₂</li>
+            <li><b>1행 특수키 바꾸기</b> — 맨 윗줄 10칸을 원하는 기호로</li>
+            <li><b>LaTeX 기호 참조 (∑∫)</b> — 기호표에서 골라 넣기</li>
+            <li><b>손글씨 수식 인식 (✏️)</b> — 기기 안 AI 모델로 변환</li>
+            <li><b>유니코드 수학 기호</b> — 이미지가 안 되는 카카오톡·인스타그램용</li>
+            <li><b>필기체 모드</b> — Shift 길게 누르면 𝓬𝓾𝓻𝓼𝓲𝓿𝓮</li>
+          </ul>
+        </article>
+
+        <!-- 붙여넣기 -->
+        <article class="sketch p-6 reveal">
+          <h3 class="text-xl font-bold mb-4">📋 붙여넣기와 편집</h3>
+          <ul class="space-y-3 text-[15px] leading-relaxed">
+            <li><b>CBD (명령어 버퍼 드래그)</b> — 좌우 드래그로 커서 이동, 감도 0.3~3.0배</li>
+            <li><b>Shift + 드래그</b> — Word에 붙인 수식 이미지 크기를 미리보기로 조절</li>
+            <li><b>붙여넣기 크기</b> — 수식 · 도형 · 그래프 따로 설정</li>
+            <li><b>클립보드 기록</b> — 지난 수식 이미지를 다시 붙여 넣기, 이름 편집</li>
+            <li><b>렌더러 선택</b> — KaTeX 또는 MathJax(화학식 mhchem 포함)</li>
+            <li><b>물리 키보드 단축키</b> — Ctrl+C / Ctrl+V</li>
+          </ul>
+        </article>
+
+        <!-- 블루투스 -->
+        <article class="sketch p-6 reveal">
+          <h3 class="text-xl font-bold mb-4">📡 블루투스 키보드 <span class="chip align-middle">⭐ 프리미엄</span></h3>
+          <ul class="space-y-3 text-[15px] leading-relaxed">
+            <li>휴대폰을 <b>PC·태블릿의 블루투스 키보드</b>로 사용</li>
+            <li><b>한글 직접 전송</b> — 두벌식 + 한/영 전환</li>
+            <li><b>자동 재연결</b> — 화면을 껐다 켜도 다시 연결</li>
+            <li><b>스니펫</b> — 자주 쓰는 LaTeX를 저장해 한 번에 전송</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 디스크 도구 -->
+  <section id="tools" class="py-16 sm:py-20 bg-paper-2" style="border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);">
+    <div class="max-w-5xl mx-auto px-4">
+      <p class="font-hand text-2xl text-accent">tools</p>
+      <h2 class="font-soft text-3xl sm:text-4xl font-bold mb-3">키보드 안의 도구 상자</h2>
+      <p class="text-ink-2 mb-10">키보드 양쪽 <b>☰ / ⚙</b> 디스크를 돌려서 엽니다.</p>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="sketch p-5 reveal">
+          <div class="flex items-center justify-between mb-2"><span class="text-2xl">🧮</span><span class="chip">⭐</span></div>
+          <h3 class="font-bold mb-1">CAS 계산기</h3>
+          <p class="text-sm text-ink-2 leading-relaxed">미분·적분·방정식·극한·급수·인수분해·테일러/푸리에·행렬·복소수. <b>풀이 과정</b>을 보여 주고, 풀이 줄을 누르면 버퍼로.</p>
+        </div>
+        <div class="sketch p-5 reveal">
+          <div class="flex items-center justify-between mb-2"><span class="text-2xl">📈</span><span class="chip">⭐</span></div>
+          <h3 class="font-bold mb-1">수학 그래프 · 도형</h3>
+          <p class="text-sm text-ink-2 leading-relaxed">함수 그래프와 정규분포를 그려 이미지로 붙여 넣기. Shift를 켜면 도형 그리기.</p>
+        </div>
+        <div class="sketch p-5 reveal">
+          <div class="flex items-center justify-between mb-2"><span class="text-2xl">📖</span><span class="chip">⭐</span></div>
+          <h3 class="font-bold mb-1">공식 모음</h3>
+          <p class="text-sm text-ink-2 leading-relaxed">물리 · 화학 · 수학 공식 약 2,600개를 탭 한 번으로. 12개 언어.</p>
+        </div>
+        <div class="sketch p-5 reveal">
+          <div class="flex items-center justify-between mb-2"><span class="text-2xl">🔖</span></div>
+          <h3 class="font-bold mb-1">스탬프</h3>
+          <p class="text-sm text-ink-2 leading-relaxed">내 이미지나 미리 만든 수학 기호를 스탬프처럼 붙이기.</p>
+        </div>
+        <div class="sketch p-5 reveal">
+          <div class="flex items-center justify-between mb-2"><span class="text-2xl">📝</span><span class="chip">⭐</span></div>
+          <h3 class="font-bold mb-1">메모</h3>
+          <p class="text-sm text-ink-2 leading-relaxed">키보드로 쓰거나 손가락·S펜으로 그리기. 자동 저장.</p>
+        </div>
+        <div class="sketch p-5 reveal">
+          <div class="flex items-center justify-between mb-2"><span class="text-2xl">🎵</span><span class="chip">⭐</span></div>
+          <h3 class="font-bold mb-1">음악 · 앱 바로 전환</h3>
+          <p class="text-sm text-ink-2 leading-relaxed">키보드에서 음악 재생, 자주 쓰는 앱 8개를 바로 전환.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 사용법 영상 -->
+  <section id="videos" class="py-16 sm:py-20">
+    <div class="max-w-5xl mx-auto px-4">
+      <p class="font-hand text-2xl text-accent">videos</p>
+      <h2 class="font-soft text-3xl sm:text-4xl font-bold mb-10">영상으로 배우기</h2>
+
+      <div class="grid md:grid-cols-[1.4fr_1fr] gap-6 items-start">
+        <div class="sketch p-3 reveal">
+          <div class="relative w-full overflow-hidden rounded-xl" style="aspect-ratio: 16 / 9;">
+            <iframe class="absolute inset-0 w-full h-full" src="https://www.youtube-nocookie.com/embed/GQR7Io3z4r0"
+                    title="MathKeyboard(LaTeX) 업데이트 영상" loading="lazy"
+                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
+          <p class="px-2 pt-3 pb-1 font-bold">🆕 2026. 11. 24. 대규모 업데이트</p>
+        </div>
+
+        <ul class="sketch p-5 space-y-1 reveal" id="video-list"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 프리미엄 -->
+  <section id="premium" class="py-16 sm:py-20 bg-paper-2" style="border-top: 1px solid var(--line);">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+      <p class="font-hand text-2xl text-accent">premium</p>
+      <h2 class="font-soft text-3xl sm:text-4xl font-bold mb-5">기본은 무료, 더 많이 쓰면 프리미엄</h2>
+      <p class="text-ink-2 leading-relaxed mb-8">
+        수식 입력과 붙여넣기는 무료로 쓸 수 있습니다.<br class="hidden sm:inline">
+        월간 · 연간 구독으로 <span class="chip">⭐</span> 표시 기능을 모두 열고 광고 없이 사용하세요.
+        광고를 보고 잠시 무료로 써 볼 수도 있어요.
+      </p>
+      <a href="https://play.google.com/store/apps/details?id=com.heappor.mathkeyboardlatex" target="_blank" rel="noopener"
+         class="btn-primary inline-block font-bold px-8 py-3 rounded-full">▶ Google Play에서 설치</a>
+    </div>
+  </section>
+
+  <footer class="py-10 text-center text-sm text-ink-2" style="border-top: 1px solid var(--line);">
+    <p class="font-hand text-xl mb-1">MathKeyboard(LaTeX)</p>
+    <p>© 2026 KJ Labs · <a href="mailto:kjlabs.app@gmail.com" class="underline">문의하기</a> · <a href="../../" class="underline">다른 앱 보기</a></p>
+  </footer>
+
+  <script>
+    // ─── 입력 → 수식 미리보기 예시 ───
+    const demos = [
+      { name: '적분', tex: '\\int_{0}^{1} x^2\\,dx = \\frac{1}{3}' },
+      { name: '근의 공식', tex: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}' },
+      { name: '극한', tex: '\\lim_{n \\to \\infty} \\left(1 + \\frac{1}{n}\\right)^n = e' },
+      { name: '시그마', tex: '\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}' },
+      { name: '물리', tex: '\\vec{F} = m\\vec{a}, \\quad E = mc^2' },
+      { name: '행렬', tex: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}' }
+    ];
+    const srcEl = document.getElementById('demo-src');
+    const outEl = document.getElementById('demo-out');
+    const tabsEl = document.getElementById('demo-tabs');
+    let current = 0;
+
+    function renderDemo(i) {
+      current = i;
+      srcEl.textContent = demos[i].tex;
+      if (window.katex) {
+        try {
+          katex.render(demos[i].tex, outEl, { displayMode: true, throwOnError: false });
+        } catch (e) {
+          outEl.textContent = demos[i].tex;
+        }
+      }
+      [...tabsEl.children].forEach((b, j) => {
+        b.setAttribute('aria-selected', j === i);
+        b.style.background = j === i ? 'var(--ink)' : 'transparent';
+        b.style.color = j === i ? 'var(--paper)' : 'var(--ink)';
+      });
+    }
+    demos.forEach((d, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.role = 'tab';
+      b.textContent = d.name;
+      b.className = 'text-sm px-3 py-1 rounded-full border-2';
+      b.style.borderColor = 'var(--ink)';
+      b.addEventListener('click', () => { stopAuto(); renderDemo(i); });
+      tabsEl.appendChild(b);
+    });
+
+    let timer = null;
+    function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDemo(0);
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) timer = setInterval(() => renderDemo((current + 1) % demos.length), 3500);
+    });
+
+    // ─── 사용법 영상 목록 ───
+    const videos = [
+      ['키보드 등록 방법', 'https://youtu.be/jm-HCOnl520'],
+      ['기본 사용 방법', 'https://youtu.be/3VHMRwUImeI'],
+      ['응용 사용 방법', 'https://youtu.be/87QICTrfoHg'],
+      ['MATH 키보드', 'https://youtu.be/5yeVAKZyoKA'],
+      ['PHYSICS 키보드', 'https://youtu.be/vGMw6UmtLx8'],
+      ['손글씨 수식 인식', 'https://youtu.be/7P8Cvbquanw'],
+      ['LaTeX 기호 참조', 'https://youtu.be/E6Szdyjrv4E'],
+      ['언어 전환 방법 (쇼츠)', 'https://youtube.com/shorts/-ur22VM6ZFI']
+    ];
+    const list = document.getElementById('video-list');
+    videos.forEach(([title, url]) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="${url}" target="_blank" rel="noopener"
+        class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-[var(--paper-2)]">
+        <span class="text-accent">▶</span><span>${title}</span></a>`;
+      list.appendChild(li);
+    });
+
+    // ─── 스크롤하면 살짝 나타나기 ───
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>
