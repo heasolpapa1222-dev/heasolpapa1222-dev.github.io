@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InkBridge</title>
-  <meta name="description" content="종이에 쓴 일기·플래너를 스캔해 보관하고, 앱에서 속지를 만들어 인쇄하는 안드로이드 플래너 앱. 손글씨 검색, 달력, 원고지·세로쓰기 속지, 학습 기록 연동.">
+  <meta name="description" content="종이에 쓴 일기·플래너를 스캔해 보관하고, 앱에서 속지를 만들어 인쇄하는 안드로이드 플래너 앱. 손글씨 검색, 달력, 원고지·세로쓰기 속지, 한자·영어·일본어·수학·과학 학습 앱 기록 자동 연동.">
   <meta property="og:title" content="InkBridge — 종이와 앱을 잇는 플래너">
   <meta property="og:description" content="손으로 쓰고, 스캔해서, 앱에서 찾아보는 안드로이드 플래너">
   <meta property="og:image" content="icon.png">
@@ -128,6 +128,7 @@
           InkBridge는 종이 일기·플래너와 휴대폰을 잇는 앱입니다.
           앱에서 속지를 만들어 인쇄하고, 손으로 쓴 페이지를 스캔하면
           날짜별로 정리되고 글자로도 검색됩니다.
+          한자·영어·일본어·수학·과학 등 KJ Labs 학습 앱으로 공부한 기록도 <b style="color: var(--ink);">자동으로</b> 쌓입니다.
         </p>
         <div class="flex flex-wrap gap-3">
           <a href="#download" class="btn-primary font-bold px-6 py-3 rounded-full">⬇ APK 다운로드</a>
@@ -138,7 +139,7 @@
 
       <div class="flex justify-center">
         <img src="icon.png" alt="InkBridge 앱 아이콘 — 민트색 스프링 노트" width="320" height="320"
-             class="w-56 h-56 sm:w-72 sm:h-72 rounded-[22%] shadow-xl rotate-2 border-2" style="border-color: var(--ink);">
+             class="w-56 h-56 sm:w-72 sm:h-72 rounded-[22%] shadow-xl border-2" style="border-color: var(--ink);">
       </div>
     </div>
   </section>
@@ -220,6 +221,29 @@
       <p class="font-hand text-2xl text-accent">works together</p>
       <h2 class="font-soft text-3xl sm:text-4xl font-bold mb-3">KJ Labs 앱과 함께 쓰면</h2>
       <p class="text-ink-2 mb-10">같은 휴대폰에 설치되어 있으면 자동으로 연결됩니다.</p>
+
+      <!-- 학습 앱 자동 기록 -->
+      <article class="sketch p-6 sm:p-8 mb-6 reveal">
+        <div class="flex flex-col sm:flex-row gap-6 sm:items-center">
+          <div class="text-5xl shrink-0" aria-hidden="true">📚</div>
+          <div class="min-w-0">
+            <h3 class="font-soft text-2xl font-bold mb-2">공부한 기록이 <span class="marker">저절로</span> 플래너에</h3>
+            <p class="text-ink-2 leading-relaxed mb-4">
+              KJ Labs에서 새로 나오는 학습 앱은 모두 InkBridge와 연결됩니다.
+              앱을 설치해 두기만 하면, 따로 적지 않아도 그날 공부한 내용이
+              InkBridge의 날짜별 목록에 자동으로 기록되고 학습 통계로 모아 볼 수 있어요.
+            </p>
+            <div class="flex flex-wrap gap-2" aria-label="연결되는 학습 분야">
+              <span class="chip">漢 한자</span>
+              <span class="chip">A 영어</span>
+              <span class="chip">あ 일본어</span>
+              <span class="chip">∑ 수학</span>
+              <span class="chip">⚛ 과학</span>
+              <span class="chip" style="background: transparent; border: 1.5px dashed var(--line); color: var(--ink-2);">계속 추가 중</span>
+            </div>
+          </div>
+        </div>
+      </article>
 
       <div class="grid md:grid-cols-2 gap-6">
         <a href="../mathkeyboard-latex/" class="sketch p-6 reveal flex gap-4 items-start">
